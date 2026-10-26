@@ -1,0 +1,22 @@
+# Node.js
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+pnpm-debug.log*
+
+# Environment variables & secrets
+.env
+.env.local
+
+# Python / FastAPI (Recommendation Engine)
+recommendation-engine/venv/
+recommendation-engine/env/
+recommendation-engine/__pycache__/
+recommendation-engine/*.pyc
+.pytest_cache/
+
+# OS / IDE specific files
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
