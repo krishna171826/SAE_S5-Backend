@@ -5,14 +5,17 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node src/server.js"
+    "start": "node src/server.js",
+    "migrate": "dotenv -- node-pg-migrate"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "type": "module",
   "dependencies": {
+    "dotenv-cli": "^11.0.0",
     "express": "^5.3.0",
+    "node-pg-migrate": "^9.0.0",
     "pg": "^8.23.1"
   }
 }
