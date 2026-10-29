@@ -20,6 +20,13 @@ exports.up = (pgm) => {
     description: { type: 'text' },
     created_at: { type: 'timestamp', default: pgm.func('current_timestamp'), notNull: true }
   });
+
+  pgm.sql(`
+    INSERT INTO algorithms (name) 
+    VALUES 
+      ('scoring'),
+      ('graphe');
+  `);
 };
 
 exports.down = (pgm) => {
