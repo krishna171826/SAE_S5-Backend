@@ -79,7 +79,7 @@ Une fois votre fichier complété et sauvegardé, appliquez-le avec `npm run mig
 
 ### ↩️ 3. Annuler la dernière migration
 
-Si vous avez fait une erreur dans votre migration et souhaitez revenir en arrière :
+Si vous avez fait une erreur dans votre migration et souhaitez revenir en arrière:
 
 ```
 npm run migrate down
@@ -87,6 +87,6 @@ npm run migrate down
 ```
 SAE_S5-Backend/
 │
-├── migrations/                  # Historique des modifications de la base de données
+├── migrations/        x    # Historique des modifications de la base de données
 │   └── 1793104098392_init.js
 ```
