@@ -18,7 +18,7 @@ export async function fetchActivities(latitude, longitude, radius) {
 
   try {
     const response = await fetch(
-      "https://overpass.private.coffee/api/interpreter",
+      "https://overpass-api.de/api/interpreter",
       {
         method: "POST",
         headers: {
@@ -38,7 +38,7 @@ export async function fetchActivities(latitude, longitude, radius) {
     return data.elements || [];
 
   } catch (error) {
-    console.error("Erreur Overpass :", error.message);
+    console.error("Erreur Overpass :", error);
     return [];
   }
 }
