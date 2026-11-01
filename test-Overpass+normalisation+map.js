@@ -12,7 +12,7 @@ async function test1314And15() {
 
   const lat = 48.8566;
   const lon = 2.3522;
-  const radius = 1000;
+  const radius = 5000;
 
   try {
     console.log("1️⃣ Récupération des données brutes Overpass (#13)...");
@@ -39,7 +39,7 @@ async function test1314And15() {
     console.log(`✨ ${mappedActivities.length} éléments traités avec succès.`);
 
     // Afficher un aperçu des 5 premiers éléments avec leurs catégories traduits
-    mappedActivities.slice(0, 5).forEach((act, index) => {
+    mappedActivities.slice(0, 20).forEach((act, index) => {
       console.log(`\n   --- Activité #${index + 1} ---`);
       console.log(`   Nom           : ${act.name}`);
       console.log(`   Tags bruts    :`, act.osm_tags);

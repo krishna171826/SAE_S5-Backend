@@ -10,16 +10,21 @@ export const CATEGORY_RULES = [
   { key: 'amenity', value: 'theatre', category: 'Culture' },
   { key: 'amenity', value: 'arts_centre', category: 'Culture' },
   { key: 'amenity', value: 'music_venue', category: 'Culture' },
+  { key: 'amenity', value: 'community_centre', category: 'Culture' },
 
   // --- NATURE ---
   { key: 'leisure', value: 'park', category: 'Nature' },
   { key: 'leisure', value: 'garden', category: 'Nature' },
   { key: 'leisure', value: 'nature_reserve', category: 'Nature' },
   { key: 'natural', value: '*', category: 'Nature' },
+  
 
   // --- LOISIRS & FAMILLE ---
   { key: 'leisure', value: 'playground', category: 'Loisirs' },
   { key: 'tourism', value: 'attraction', category: 'Loisirs' },
+  { key: 'tourism', value: 'viewpoint', category: 'Loisirs' },
+  { key: 'amenity', value: 'community_centre', category: 'Culture' },
+  { key: 'tourism', value: 'viewpoint', category: 'Loisirs' },
 
   // --- SPORT ---
   { key: 'leisure', value: 'pitch', category: 'Sport' },
