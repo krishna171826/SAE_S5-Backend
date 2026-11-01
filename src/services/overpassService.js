@@ -26,7 +26,7 @@ export async function fetchActivities(latitude, longitude, radius) {
           "User-Agent": "SAE-S5-Activities/1.0"
         },
         body: "data=" + encodeURIComponent(query),
-        signal: AbortSignal.timeout(30000)
+        signal: AbortSignal.timeout(600000)
       }
     );
 
