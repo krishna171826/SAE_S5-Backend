@@ -2,9 +2,9 @@ import { request } from "express"
 
 function apiUrlFreeForm(address) {
     try {
-        let addressFinal = String(address).replaceAll(" ", "+")
+        let addressFinal = encodeURIComponent(address)
         console.log('adreese final', addressFinal)
-        return 'https://nominatim.openstreetmap.org/search?q=' + address + '&format=jsonv2&addressdetails=1'
+        return 'https://nominatim.openstreetmap.org/search?q=' + addressFinal + '&format=jsonv2&addressdetails=1'
 
     } catch (error) {
         throw new Error("pb function apiUrlFreeForm")
@@ -15,7 +15,7 @@ function apiUrlFreeForm(address) {
 
 }
 
-export async function geoCodeAdress(address) {
+async function fetchLocation(address) {
     try {
 
         let url = apiUrlFreeForm(address)
@@ -27,17 +27,44 @@ export async function geoCodeAdress(address) {
         })
         if (!rep.ok) {
             console.error("not ok", rep.status)
-            throw new Error(`problem in geoCodeAdress:${rep.status}`)
+            throw new Error(`problem in fetchLocation:${rep.status}`)
         }
         let result = await rep.json();
         console.log(result);
+        return result
     } catch (error) {
         console.error(error)
-        throw new Error(error.Error)
+        throw new Error(error.message)
     } finally {
-        console.log("end of geoCodeAddress")
+        console.log("end of fetchLocation")
     }
 
 }
 
-console.log(geoCodeAdress('10 rue du bel air fosses 95470'))
+export async function geoCodeAdress(address) {
+    try {
+
+        let addressJson = await fetchLocation(address)
+        if (!addressJson || addressJson.length === 0) {
+            return {
+                success: false,
+                message: "Adresse introuvable. Veuillez vérifier votre saisie."
+            };
+        }
+
+        let result = {
+            success: true,
+            latitude: addressJson[0]["lat"],
+            longitude: addressJson[0]["lon"]
+        };
+        return result;
+
+    } catch (error) {
+        throw new Error(error.message);
+
+    } finally {
+        console.log('end of geoCodeAddress')
+    }
+}
+
+
