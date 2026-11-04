@@ -1,22 +1,25 @@
-import pool from '../db/pool.js';
+import pool from '../db.js';
 
 export async function upsertActivity(client, activity) {
   const query = `
     INSERT INTO activities (
-      osm_id, osm_type, name, location, website, phone, free, indoor, osm_tags
+      osm_id, osm_type, name, address, latitude, longitude, website, fee,
+      indoor_outdoor, osm_tags, opening_hours
     ) VALUES (
-      $1, $2, $3, ST_SetSRID(ST_MakePoint($4, $5), 4326), $6, $7, $8, $9, $10
+      $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11
     )
     ON CONFLICT (osm_type, osm_id) 
     DO UPDATE SET 
       name = EXCLUDED.name,
-      location = EXCLUDED.location,
+      address = EXCLUDED.address,
+      latitude = EXCLUDED.latitude,
+      longitude = EXCLUDED.longitude,
       website = EXCLUDED.website,
-      phone = EXCLUDED.phone,
-      free = EXCLUDED.free,
-      indoor = EXCLUDED.indoor,
+      fee = EXCLUDED.fee,
+      indoor_outdoor = EXCLUDED.indoor_outdoor,
       osm_tags = EXCLUDED.osm_tags,
-      updated_at = NOW()
+      opening_hours = EXCLUDED.opening_hours,
+      imported_at = NOW()
     RETURNING id;
   `;
 
@@ -24,13 +27,14 @@ export async function upsertActivity(client, activity) {
     activity.osm_id,
     activity.osm_type,
     activity.name,
-    activity.longitude, // PostGIS : longitude puis latitude
-    activity.latitude,
-    activity.website,
-    activity.phone,
-    activity.free,
-    activity.indoor,
-    JSON.stringify(activity.osm_tags)
+    activity.address,                // $4 : Ajouté ici !
+    activity.latitude,               // $5
+    activity.longitude,              // $6
+    activity.website,                // $7
+    activity.fee === null ? null : !activity.fee, // $8
+    activity.indoor === null ? null : (activity.indoor ? 'indoor' : 'outdoor'), // $9
+    JSON.stringify(activity.osm_tags), // $10
+    activity.osm_tags?.opening_hours || null // $11
   ];
 
   const result = await client.query(query, values);
