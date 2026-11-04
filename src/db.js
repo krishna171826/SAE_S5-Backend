@@ -11,13 +11,29 @@ const pool = new Pool(process.env.DB_HOST ? {
   connectionString: process.env.DATABASE_URL,
 });
 
-pool.connect((err, client, release) => {
-  if (err) {
-    console.error('Erreur de connexion à la base de données :', err.stack);
-  } else {
-    console.log('Connexion à PostgreSQL réussie avec succès !');
+// Fonction utilitaire pour patienter
+const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
+// Fonction de test avec tentatives automatiques (Retry)
+async function connectWithRetry(retries = 5, delay = 2000) {
+  for (let i = 0; i < retries; i++) {
+    try {
+      const client = await pool.connect();
+      console.log('Connexion à PostgreSQL réussie avec succès !');
+      client.release();
+      return;
+    } catch (err) {
+      console.warn(`Tentative ${i + 1}/${retries} : PostgreSQL démarre, nouvelle tentative dans 2s...`);
+      if (i === retries - 1) {
+        console.error('Erreur critique : Impossible de se connecter à PostgreSQL :', err.stack);
+      } else {
+        await sleep(delay);
+      }
+    }
   }
-  if (client) release();
-});
+}
+
+// Lancer la vérification de connexion au démarrage
+connectWithRetry();
 
 export default pool;
