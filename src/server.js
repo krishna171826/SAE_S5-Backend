@@ -1,12 +1,15 @@
 import express from "express";
-import pool from './db.js'; // sert a activer le conexion du fichier db
+import pool from './db.js'; // sert à activer la connexion du fichier db
 import categoryRoutes from './routes/categoryRoutes.js';
+import visitorRoutes from './routes/visitorRoutes.js';
 
 const app = express();
 
 app.use(express.json());
-app.use("/api/categories", categoryRoutes);
 
+// Enregistrement des routes
+app.use("/api/categories", categoryRoutes);
+app.use('/api', visitorRoutes);
 
 app.get("/health", (req, res) => {
   res.json({ status: "ok" });
@@ -25,7 +28,6 @@ app.get('/test-db', async (req, res) => {
   }
 });
 
-
 app.get('/activities', async (req, res) => {
   try {
     const result = await pool.query('SELECT * FROM activities LIMIT 5');
@@ -35,7 +37,6 @@ app.get('/activities', async (req, res) => {
     res.status(500).json({ erreur: "Erreur avec la table activities" });
   }
 });
-
 
 app.listen(3000, "0.0.0.0", () => {
   console.log("Express démarré sur le port 3000");
