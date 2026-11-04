@@ -1,4 +1,4 @@
-import pool from '../db/pool.js';
+import pool from '../db.js';
 import { upsertActivity, linkActivityCategories } from '../models/activityModel.js';
 import { normalizeActivities } from './osmNormalizationService.js';
 import { mapActivityCategories } from './categoryMappingService.js';
