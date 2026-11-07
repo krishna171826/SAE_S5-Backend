@@ -31,7 +31,7 @@ export async function upsertActivity(client, activity) {
     activity.latitude,               // $5
     activity.longitude,              // $6
     activity.website,                // $7
-    activity.fee === null ? null : !activity.fee, // $8
+    activity.free === null ? null : !activity.free, // $8
     activity.indoor === null ? null : (activity.indoor ? 'indoor' : 'outdoor'), // $9
     JSON.stringify(activity.osm_tags), // $10
     activity.osm_tags?.opening_hours || null // $11
