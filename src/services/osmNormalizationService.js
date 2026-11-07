@@ -54,8 +54,13 @@ export function normalizeActivity(element) {
   }
 
   // --- GRATUITÉ ---
-  const free = tags.fee === 'no' || tags.charge === 'no' ? true : (tags.fee === 'yes' || tags.charge === 'yes' ? false : null);
+  let free = null;
 
+  if (tags.fee === 'no') {
+    free = true;
+  } else if (tags.fee === 'yes') {
+    free = false;
+  }
   return {
     osm_id: element.id,
     osm_type: element.type,
