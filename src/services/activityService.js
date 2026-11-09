@@ -1,5 +1,5 @@
 import pool from '../db.js';
-import { upsertActivity, linkActivityCategories, findNearbyActivitiesModel } from '../models/activityModel.js';
+import { upsertActivity, linkActivityCategories, findNearbyActivities } from '../models/activityModel.js';
 import { normalizeActivities } from './osmNormalizationService.js';
 import { mapActivityCategories } from './categoryMappingService.js';
 
@@ -68,6 +68,8 @@ export async function getActivitiesNearLocation(lon, lat, radius) {
         adresse: activite.address,
         type: activite.osm_type,
         distance: activite.distance,
+        fee: activite.fee,
+        indoor_outdoor: activite.indoor_outdoor,
         coordonnees: {
           lat: activite.latitude,
           lon: activite.longitude
