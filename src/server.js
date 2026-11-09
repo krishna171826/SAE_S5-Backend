@@ -1,6 +1,7 @@
 import express from "express";
 import pool from './db.js'; // sert à activer la connexion du fichier db
 import categoryRoutes from './routes/categoryRoutes.js';
+import searchRoutes from './routes/searchRoutes.js';
 import visitorRoutes from './routes/visitorRoutes.js';
 
 const app = express();
@@ -9,6 +10,7 @@ app.use(express.json());
 
 // Enregistrement des routes
 app.use("/api/categories", categoryRoutes);
+app.use('/api/searches', searchRoutes);
 app.use('/api', visitorRoutes);
 
 app.get("/health", (req, res) => {

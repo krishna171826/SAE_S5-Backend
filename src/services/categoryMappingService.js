@@ -1,61 +1,188 @@
 
-export const CATEGORY_RULES = [
-  // CULTURE
-  { key: 'tourism', value: 'museum', category: 'Culture' },
-  { key: 'tourism', value: 'gallery', category: 'Culture' },
-  { key: 'amenity', value: 'cinema', category: 'Culture' },
-  { key: 'amenity', value: 'theatre', category: 'Culture' },
-  { key: 'amenity', value: 'arts_centre', category: 'Culture' },
-  { key: 'amenity', value: 'music_venue', category: 'Culture' },
-  { key: 'amenity', value: 'planetarium', category: 'Culture' },
-  { key: 'amenity', value: 'community_centre', category: 'Culture' },
+/**
+ * Service de catégorisation des activités OpenStreetMap.
+ *
+ * Une activité peut appartenir à plusieurs catégories.
+ */
 
-  // NATURE
-  { key: 'leisure', value: 'park', category: 'Nature' },
-  { key: 'leisure', value: 'garden', category: 'Nature' },
-  { key: 'leisure', value: 'nature_reserve', category: 'Nature' },
+export const CATEGORY_VALUES = {
+  Culture: {
+    amenity: [
+      'arts_centre',
+      'cinema',
+      'community_centre',
+      'library',
+      'music_venue',
+      'planetarium',
+      'theatre',
+      'conference_centre'
+    ],
+    tourism: [
+      'gallery',
+      'museum'
+    ],
+    leisure: [
+      'cultural_centre'
+    ],
+    historic: [
+      'castle',
+      'fort',
+      'monument',
+      'memorial',
+      'archaeological_site',
+      'ruins'
+    ]
+  },
 
-  // LOISIRS
-  { key: 'leisure', value: 'bowling_alley', category: 'Loisirs' },
-  { key: 'leisure', value: 'escape_game', category: 'Loisirs' },
-  { key: 'leisure', value: 'amusement_arcade', category: 'Loisirs' },
-  { key: 'leisure', value: 'playground', category: 'Loisirs' },
-  { key: 'leisure', value: 'water_park', category: 'Loisirs' },
-  { key: 'tourism', value: 'attraction', category: 'Loisirs' },
-  { key: 'tourism', value: 'theme_park', category: 'Loisirs' },
-  { key: 'tourism', value: 'zoo', category: 'Loisirs' },
-  { key: 'tourism', value: 'aquarium', category: 'Loisirs' },
-  { key: 'tourism', value: 'viewpoint', category: 'Loisirs' },
-  { key: 'amenity', value: 'nightclub', category: 'Loisirs' },
+  Nature: {
+    leisure: [
+      'garden',
+      'nature_reserve',
+      'park',
+      'bird_hide'
+    ],
+    tourism: [
+      'nature_reserve'
+    ],
+    natural: [
+      'beach',
+      'heath',
+      'wood',
+      'waterfall',
+      'cave_entrance'
+    ],
+    landuse: [
+      'forest',
+      'recreation_ground'
+    ]
+  },
 
-  // SPORT
-  { key: 'leisure', value: 'pitch', category: 'Sport' },
-  { key: 'leisure', value: 'sports_centre', category: 'Sport' },
-  { key: 'leisure', value: 'fitness_centre', category: 'Sport' },
-  { key: 'leisure', value: 'swimming_pool', category: 'Sport' },
-  { key: 'leisure', value: 'ice_rink', category: 'Sport' },
-  { key: 'sport', value: '*', category: 'Sport' },
+  Loisirs: {
+    amenity: [
+      'nightclub',
+      'casino'
+    ],
+    leisure: [
+      'amusement_arcade',
+      'beach_resort',
+      'bowling_alley',
+      'dance',
+      'escape_game',
+      'horse_riding',
+      'miniature_golf',
+      'playground',
+      'water_park',
+      'adult_gaming_centre'
+    ],
+    tourism: [
+      'aquarium',
+      'attraction',
+      'theme_park',
+      'viewpoint',
+      'zoo'
+    ]
+  },
 
-  // RESTAURATION
-  { key: 'amenity', value: 'restaurant', category: 'Restauration' },
-  { key: 'amenity', value: 'cafe', category: 'Restauration' },
-  { key: 'amenity', value: 'fast_food', category: 'Restauration' }
-];
+  Sport: {
+    leisure: [
+      'fitness_centre',
+      'golf_course',
+      'ice_rink',
+      'pitch',
+      'sports_centre',
+      'sports_hall',
+      'stadium',
+      'swimming_pool',
+      'track',
+      'fitness_station'
+    ],
+    sport: '*',
+    club: [
+      'sport'
+    ]
+  },
+
+  Restauration: {
+    amenity: [
+      'bar',
+      'biergarten',
+      'cafe',
+      'fast_food',
+      'food_court',
+      'ice_cream',
+      'pub',
+      'restaurant'
+    ],
+    shop: [
+      'bakery',
+      'pastry',
+      'confectionery',
+      'deli'
+    ]
+  }
+};
+
+// --------------------------------------------------
+// HELPERS
+// --------------------------------------------------
+
+function tagValues(value) {
+  if (typeof value !== 'string') return [];
+
+  return value
+    .split(';')
+    .map(item => item.trim().toLowerCase())
+    .filter(Boolean);
+}
+
+function matchesTag(osmTags, key, allowedValues) {
+  const values = tagValues(osmTags[key]);
+
+  if (values.length === 0) return false;
+
+  if (allowedValues === '*') {
+    return values.some(
+      value => !['no', 'none'].includes(value)
+    );
+  }
+
+  return values.some(value =>
+    allowedValues.includes(value)
+  );
+}
+
+// --------------------------------------------------
+// CATÉGORISATION PRINCIPALE
+// --------------------------------------------------
 
 export function mapActivityCategories(osmTags) {
-  if (!osmTags || typeof osmTags !== 'object') {
+  if (
+    !osmTags ||
+    typeof osmTags !== 'object' ||
+    Array.isArray(osmTags)
+  ) {
     return [];
   }
 
-  const categories = new Set();
+  const categories = [];
 
-  for (const rule of CATEGORY_RULES) {
-    const value = osmTags[rule.key];
+  for (
+    const [category, rules]
+    of Object.entries(CATEGORY_VALUES)
+  ) {
+    const matches = Object.entries(rules).some(
+      ([key, allowedValues]) =>
+        matchesTag(
+          osmTags,
+          key,
+          allowedValues
+        )
+    );
 
-    if (value === rule.value || (rule.value === '*' && value !== undefined)) {
-      categories.add(rule.category);
+    if (matches) {
+      categories.push(category);
     }
   }
 
-  return Array.from(categories);
+  return categories;
 }

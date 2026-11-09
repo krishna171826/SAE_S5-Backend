@@ -6,7 +6,7 @@ import pool from '../db.js';
  */
 export async function createSearchRecord({ visitorId, address, latitude, longitude, radius }) {
   const query = `
-    INSERT INTO searches (visitor_id, address, latitude, longitude, radius)
+    INSERT INTO searches (user_id, address, latitude, longitude, radius_m)
     VALUES ($1, $2, $3, $4, $5)
     RETURNING id, created_at;
   `;
