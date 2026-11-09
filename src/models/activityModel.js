@@ -58,3 +58,41 @@ export async function linkActivityCategories(client, activityId, categoryNames) 
     await client.query(insertLink, [activityId, cat.id]);
   }
 }
+export async function findNearbyActivities(client, pointLongitude, pointLatitude, rayon) {
+  if (!pointLongitude || !pointLatitude) return [];
+
+  const query = `
+    WITH Recherche AS (  -- Recherche avec le geom du point chercher par l'utulisateur 
+      -- 1. On stocke le point de l'utilisateur dans une variable "centre"
+      SELECT ST_SetSRID(ST_MakePoint($1, $2), 4326)::geography AS centre
+    ),
+    ActivitesGeom AS (-- ActiviteGeom avec le geom des activité qui peut etre ajouter dans la table activites dans le futur
+      SELECT 
+        *, 
+        ST_SetSRID(ST_MakePoint(longitude, latitude), 4326)::geography AS geom
+      FROM activities
+    )
+    
+    SELECT 
+      a.id, 
+      a.name, 
+      a.address, 
+      a.osm_type, 
+      a.osm_tags,
+      a.latitude,
+      a.longitude,
+      ROUND(ST_Distance(a.geom, r.centre)) AS distance
+    FROM ActivitesGeom a
+    CROSS JOIN Recherche r
+    WHERE ST_DWithin(a.geom, r.centre, $3)
+    ORDER BY distance ASC;
+  `;
+
+  try {
+    const result = await client.query(query, [pointLongitude, pointLatitude, rayon]);
+    return result.rows;
+  } catch (error) {
+    console.error("Erreur lors de la recherche des activités :", error);
+    throw error;
+  }
+}
