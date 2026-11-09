@@ -67,3 +67,50 @@ export async function linkActivityCategories(client, activityId, categoryNames) 
     );
   }
 }
+
+export async function findNearbyActivities(client, pointLongitude, pointLatitude, rayon) {
+
+  // Vérifier si les coordonnées sont renseignées
+  if (pointLongitude == null || pointLatitude == null) return [];
+
+  const query = `
+    WITH Recherche AS (
+      SELECT ST_SetSRID(ST_MakePoint($1, $2), 4326)::geography AS centre
+    ),
+    ActivitesGeom AS (
+      SELECT *,
+        ST_SetSRID(ST_MakePoint(longitude, latitude), 4326)::geography AS geom
+      FROM activities
+    )
+
+    SELECT
+      a.id,
+      a.name,
+      a.fee,
+      a.indoor_outdoor,
+      a.address,
+      a.osm_type,
+      a.osm_tags,
+      a.latitude,
+      a.longitude,
+      ROUND(ST_Distance(a.geom, r.centre)) AS distance
+    FROM ActivitesGeom a
+    CROSS JOIN Recherche r
+    WHERE ST_DWithin(a.geom, r.centre, $3)
+    ORDER BY distance ASC;
+  `;
+
+  try {
+    const result = await client.query(query, [
+      pointLongitude,
+      pointLatitude,
+      rayon
+    ]);
+
+    return result.rows;
+
+  } catch (error) {
+    console.error("Erreur lors de la recherche des activités :", error);
+    throw error;
+  }
+}
