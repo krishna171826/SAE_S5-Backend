@@ -1,4 +1,3 @@
-import pool from '../db.js';
 
 export async function upsertActivity(client, activity) {
   const query = `
@@ -8,8 +7,8 @@ export async function upsertActivity(client, activity) {
     ) VALUES (
       $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11
     )
-    ON CONFLICT (osm_type, osm_id) 
-    DO UPDATE SET 
+    ON CONFLICT (osm_type, osm_id)
+    DO UPDATE SET
       name = EXCLUDED.name,
       address = EXCLUDED.address,
       latitude = EXCLUDED.latitude,
@@ -27,57 +26,70 @@ export async function upsertActivity(client, activity) {
     activity.osm_id,
     activity.osm_type,
     activity.name,
-    activity.address,                // $4 : Ajouté ici !
-    activity.latitude,               // $5
-    activity.longitude,              // $6
-    activity.website,                // $7
-    activity.fee === null ? null : !activity.fee, // $8
-    activity.indoor === null ? null : (activity.indoor ? 'indoor' : 'outdoor'), // $9
-    JSON.stringify(activity.osm_tags), // $10
-    activity.osm_tags?.opening_hours || null // $11
+    activity.address,
+    activity.latitude,
+    activity.longitude,
+    activity.website,
+    activity.free === null ? null : !activity.free,
+    activity.indoor === null ? null : (activity.indoor ? 'indoor' : 'outdoor'),
+    JSON.stringify(activity.osm_tags),
+    activity.osm_tags?.opening_hours || null
   ];
 
   const result = await client.query(query, values);
   return result.rows[0].id;
 }
 
+// Associer une activité à ses catégories
 export async function linkActivityCategories(client, activityId, categoryNames) {
+
+  // Supprimer les anciennes associations
+  await client.query(
+    'DELETE FROM activities_categories WHERE activity_id = $1',
+    [activityId]
+  );
+
+  // Arrêter si aucune catégorie
   if (!categoryNames || categoryNames.length === 0) return;
 
-  await client.query('DELETE FROM activities_categories WHERE activity_id = $1;', [activityId]);
+  // Récupérer les catégories existantes
+  const result = await client.query(
+    'SELECT id FROM categories WHERE name = ANY($1::text[])',
+    [categoryNames]
+  );
 
-  const catQuery = 'SELECT id, name FROM categories WHERE name = ANY($1::text[]);';
-  const catResult = await client.query(catQuery, [categoryNames]);
-
-  for (const cat of catResult.rows) {
-    const insertLink = `
-      INSERT INTO activities_categories (activity_id, category_id)
-      VALUES ($1, $2)
-      ON CONFLICT DO NOTHING;
-    `;
-    await client.query(insertLink, [activityId, cat.id]);
+  // Enregistrer les nouvelles associations
+  for (const category of result.rows) {
+    await client.query(
+      `INSERT INTO activities_categories (activity_id, category_id)
+       VALUES ($1, $2)`,
+      [activityId, category.id]
+    );
   }
 }
+
 export async function findNearbyActivities(client, pointLongitude, pointLatitude, rayon) {
-  if (!pointLongitude || !pointLatitude) return [];
+
+  // Vérifier si les coordonnées sont renseignées
+  if (pointLongitude == null || pointLatitude == null) return [];
 
   const query = `
-    WITH Recherche AS (  -- Recherche avec le geom du point chercher par l'utulisateur 
-      -- 1. On stocke le point de l'utilisateur dans une variable "centre"
+    WITH Recherche AS (
       SELECT ST_SetSRID(ST_MakePoint($1, $2), 4326)::geography AS centre
     ),
-    ActivitesGeom AS (-- ActiviteGeom avec le geom des activité qui peut etre ajouter dans la table activites dans le futur
-      SELECT 
-        *, 
+    ActivitesGeom AS (
+      SELECT *,
         ST_SetSRID(ST_MakePoint(longitude, latitude), 4326)::geography AS geom
       FROM activities
     )
-    
-    SELECT 
-      a.id, 
-      a.name, 
-      a.address, 
-      a.osm_type, 
+
+    SELECT
+      a.id,
+      a.name,
+      a.fee,
+      a.indoor_outdoor,
+      a.address,
+      a.osm_type,
       a.osm_tags,
       a.latitude,
       a.longitude,
@@ -89,8 +101,14 @@ export async function findNearbyActivities(client, pointLongitude, pointLatitude
   `;
 
   try {
-    const result = await client.query(query, [pointLongitude, pointLatitude, rayon]);
+    const result = await client.query(query, [
+      pointLongitude,
+      pointLatitude,
+      rayon
+    ]);
+
     return result.rows;
+
   } catch (error) {
     console.error("Erreur lors de la recherche des activités :", error);
     throw error;
