@@ -68,12 +68,10 @@ export async function linkActivityCategories(client, activityId, categoryNames) 
   }
 }
 
-export async function findNearbyActivities(client, pointLongitude, pointLatitude, rayon) {
-
-  // Vérifier si les coordonnées sont renseignées
+export async function findNearbyActivities(client, pointLongitude, pointLatitude, rayon, filters = {}) {
   if (pointLongitude == null || pointLatitude == null) return [];
 
-  const query = `
+  let query = `
     WITH Recherche AS (
       SELECT ST_SetSRID(ST_MakePoint($1, $2), 4326)::geography AS centre
     ),
@@ -82,7 +80,6 @@ export async function findNearbyActivities(client, pointLongitude, pointLatitude
         ST_SetSRID(ST_MakePoint(longitude, latitude), 4326)::geography AS geom
       FROM activities
     )
-
     SELECT
       a.id,
       a.name,
@@ -93,24 +90,39 @@ export async function findNearbyActivities(client, pointLongitude, pointLatitude
       a.osm_tags,
       a.latitude,
       a.longitude,
-      ROUND(ST_Distance(a.geom, r.centre)) AS distance
+      ROUND(ST_Distance(a.geom, r.centre)) AS distance,
+      COALESCE(
+        json_agg(
+          json_build_object('id', c.id, 'name', c.name, 'slug', c.slug)
+        ) FILTER (WHERE c.id IS NOT NULL), '[]'
+      ) AS categories
     FROM ActivitesGeom a
     CROSS JOIN Recherche r
+    LEFT JOIN activities_categories ac ON a.id = ac.activity_id
+    LEFT JOIN categories c ON ac.category_id = c.id
     WHERE ST_DWithin(a.geom, r.centre, $3)
-    ORDER BY distance ASC;
   `;
 
+  const values = [pointLongitude, pointLatitude, rayon];
+  let paramIndex = 4;
+
+  if (filters.indoor_outdoor) {
+    query += ` AND a.indoor_outdoor = $${paramIndex}`;
+    values.push(filters.indoor_outdoor);
+    paramIndex++;
+  }
+
+  if (filters.free_only === true) {
+    query += ` AND a.fee = false`;
+  }
+
+  query += ` GROUP BY a.id, a.name, a.fee, a.indoor_outdoor, a.address, a.osm_type, a.osm_tags, a.latitude, a.longitude, a.geom, r.centre ORDER BY distance ASC;`;
+
   try {
-    const result = await client.query(query, [
-      pointLongitude,
-      pointLatitude,
-      rayon
-    ]);
-
+    const result = await client.query(query, values);
     return result.rows;
-
   } catch (error) {
-    console.error("Erreur lors de la recherche des activités :", error);
+    console.error("Erreur lors de la recherche des activités : ", error);
     throw error;
   }
 }

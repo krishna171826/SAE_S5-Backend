@@ -1,9 +1,8 @@
-// src/controllers/searchController.js
 import { processSearch } from '../services/searchService.js';
 
 export async function handleSearch(req, res) {
   try {
-    const { address, radius, visitorId, indoor_outdoor } = req.body;
+    const { address, radius, visitorId, indoor_outdoor, category, free_only } = req.body;
 
     if (!address) {
       return res.status(400).json({ 
@@ -12,11 +11,17 @@ export async function handleSearch(req, res) {
       });
     }
 
+    const preferences = {
+      category: category || null,
+      indoor_outdoor: indoor_outdoor || null,
+      free_only: free_only === true
+    };
+
     const result = await processSearch({
       address,
       radius,
       visitorId,
-      indoor_outdoor
+      preferences
     });
 
     res.status(201).json({
@@ -25,7 +30,7 @@ export async function handleSearch(req, res) {
     });
 
   } catch (error) {
-    console.error("❌ Erreur dans handleSearch :", error.message);
+    console.error('❌ Erreur dans handleSearch : ', error.message);
     res.status(500).json({ 
       success: false, 
       error: error.message 
