@@ -1,10 +1,14 @@
 import express from "express";
+import cors from "cors"; // 1. Importer le module cors
 import pool from './db.js'; // sert à activer la connexion du fichier db
 import categoryRoutes from './routes/categoryRoutes.js';
 import searchRoutes from './routes/searchRoutes.js';
 import visitorRoutes from './routes/visitorRoutes.js';
 
 const app = express();
+
+// 2. Activer CORS pour toutes les requêtes (permet au front-end sur le port 5173 de communiquer)
+app.use(cors());
 
 app.use(express.json());
 
