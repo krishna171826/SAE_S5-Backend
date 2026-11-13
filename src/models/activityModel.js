@@ -93,7 +93,7 @@ export async function findNearbyActivities(client, pointLongitude, pointLatitude
       ROUND(ST_Distance(a.geom, r.centre)) AS distance,
       COALESCE(
         json_agg(
-          json_build_object('id', c.id, 'name', c.name, 'slug', c.slug)
+          json_build_object('id', c.id, 'name', c.name)
         ) FILTER (WHERE c.id IS NOT NULL), '[]'
       ) AS categories
     FROM ActivitesGeom a
