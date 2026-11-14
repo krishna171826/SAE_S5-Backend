@@ -10,8 +10,7 @@ class Preferences(BaseModel):
     indoor_outdoor: Optional[str] = None
     free_only: Optional[bool] = False
     searchCenter: Optional[Dict[str, float]] = None
-    radiusMeters: Optional[float] = None
-
+    radiusMeters: float
 class Activity(BaseModel):
     id: int
     name: str
