@@ -11,6 +11,19 @@ export async function handleSearch(req, res) {
       });
     }
 
+    if (
+      radius === undefined ||
+      radius === null ||
+      String(radius).trim() === "" ||
+      !Number.isFinite(Number(radius)) ||
+      Number(radius) <= 0
+    ) {
+    return res.status(400).json({
+      success: false,
+      error: "Veuillez saisir un rayon valide."
+    });
+  }
+
     const preferences = {
       category: category || null,
       indoor_outdoor: indoor_outdoor || null,
@@ -30,7 +43,7 @@ export async function handleSearch(req, res) {
     });
 
   } catch (error) {
-    console.error('❌ Erreur dans handleSearch : ', error.message);
+    console.error('Erreur dans handleSearch : ', error.message);
     res.status(500).json({ 
       success: false, 
       error: error.message 
