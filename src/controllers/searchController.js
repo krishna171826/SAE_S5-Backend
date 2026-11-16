@@ -2,8 +2,7 @@ import { processSearch } from '../services/searchService.js';
 
 export async function handleSearch(req, res) {
   try {
-    const { address, radius, visitorId, indoor_outdoor, category, free_only } = req.body;
-
+    const { address, radius, visitorId, indoor_outdoor, categories, free_only } = req.body;
     if (!address) {
       return res.status(400).json({ 
         success: false, 
@@ -22,10 +21,10 @@ export async function handleSearch(req, res) {
       success: false,
       error: "Veuillez saisir un rayon valide."
     });
-  }
+    }
 
     const preferences = {
-      category: category || null,
+      categories: Array.isArray(categories) ? categories : [],
       indoor_outdoor: indoor_outdoor || null,
       free_only: free_only === true
     };
@@ -44,9 +43,9 @@ export async function handleSearch(req, res) {
 
   } catch (error) {
     console.error('Erreur dans handleSearch : ', error.message);
-    res.status(500).json({ 
-      success: false, 
-      error: error.message 
+    res.status(error.statusCode || 500).json({
+      success: false,
+      error: error.message
     });
   }
 }

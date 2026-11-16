@@ -6,7 +6,7 @@ from scoring import recommend_activities
 app = FastAPI(title="Spotly Recommendation Engine")
 
 class Preferences(BaseModel):
-    category: Optional[str] = None
+    categories: List[str] = []
     indoor_outdoor: Optional[str] = None
     free_only: Optional[bool] = False
     searchCenter: Optional[Dict[str, float]] = None
