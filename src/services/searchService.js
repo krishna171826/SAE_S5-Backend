@@ -38,7 +38,14 @@ export async function processSearch({ address, radius, visitorId, preferences })
     .filter(activity => activity.categories.length > 0);
 
 
-  
+  // Garder uniquement les catégories sélectionnées
+  if (preferences.categories?.length > 0) {
+    activities = activities.filter(activity =>
+      activity.categories.some(category =>
+        preferences.categories.includes(category.name)
+      )
+    );
+  }  
   // Préparer les données pour Python
   const payloadForPython = {
     preferences: {
