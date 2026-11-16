@@ -10,27 +10,13 @@ export const CATEGORY_VALUES = {
     amenity: [
       'arts_centre',
       'cinema',
-      'community_centre',
-      'library',
       'music_venue',
       'planetarium',
-      'theatre',
-      'conference_centre'
+      'theatre'
     ],
     tourism: [
       'gallery',
       'museum'
-    ],
-    leisure: [
-      'cultural_centre'
-    ],
-    historic: [
-      'castle',
-      'fort',
-      'monument',
-      'memorial',
-      'archaeological_site',
-      'ruins'
     ]
   },
 
@@ -38,15 +24,13 @@ export const CATEGORY_VALUES = {
     leisure: [
       'garden',
       'nature_reserve',
-      'park',
-      'bird_hide'
+      'park'
     ],
     tourism: [
       'nature_reserve'
     ],
     natural: [
       'beach',
-      'heath',
       'wood',
       'waterfall',
       'cave_entrance'
@@ -70,9 +54,7 @@ export const CATEGORY_VALUES = {
       'escape_game',
       'horse_riding',
       'miniature_golf',
-      'playground',
-      'water_park',
-      'adult_gaming_centre'
+      'water_park'
     ],
     tourism: [
       'aquarium',
@@ -85,20 +67,24 @@ export const CATEGORY_VALUES = {
 
   Sport: {
     leisure: [
-      'fitness_centre',
       'golf_course',
       'ice_rink',
       'pitch',
       'sports_centre',
       'sports_hall',
-      'stadium',
-      'swimming_pool',
-      'track',
-      'fitness_station'
+      'swimming_pool'
     ],
-    sport: '*',
-    club: [
-      'sport'
+    sport: [
+      'climbing',
+      'karting',
+      'laser_tag',
+      'paintball',
+      'tennis',
+      'basketball',
+      'soccer',
+      'badminton',
+      'table_tennis',
+      'swimming'
     ]
   },
 
@@ -112,12 +98,6 @@ export const CATEGORY_VALUES = {
       'ice_cream',
       'pub',
       'restaurant'
-    ],
-    shop: [
-      'bakery',
-      'pastry',
-      'confectionery',
-      'deli'
     ]
   }
 };

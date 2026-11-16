@@ -3,6 +3,7 @@ import { fetchActivities } from './overpassService.js';
 import { saveActivitiesBatch } from "./activityService.js";
 import { findNearbyActivities } from "../models/activityModel.js";
 import { createSearchRecord, saveRecommendations } from "../models/searchModel.js";
+import { mapActivityCategories } from "./categoryMappingService.js";
 import pool from "../db.js";
 
 export async function processSearch({ address, radius, visitorId, preferences }) {
@@ -22,6 +23,20 @@ export async function processSearch({ address, radius, visitorId, preferences })
   } finally {
     client.release();
   }
+
+  // Recalculer les catégories selon les nouvelles règles ( temporaire)
+  // et exclure les lieux qui ne correspondent plus.
+  activities = activities
+    .map(activity => {
+      const categories = mapActivityCategories(activity.osm_tags);
+
+      return {
+        ...activity,
+        categories: categories.map(name => ({ name }))
+      };
+    })
+    .filter(activity => activity.categories.length > 0);
+
 
   
   // Préparer les données pour Python
