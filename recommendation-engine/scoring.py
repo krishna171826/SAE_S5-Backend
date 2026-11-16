@@ -4,17 +4,18 @@ def calculate_score(activity, preferences):
 
     # ici on verifie la catégorie qui peut avoir 40 points max.
 
-    category = preferences.get("category")
-    if category:
-        categories = activity.get("categories") or []
+    categories = preferences.get("categories") or []
+    activity_categories = activity.get("categories") or []
 
-        names = [
-            c.get("name") if isinstance(c, dict) else c
-            for c in categories
-        ]
+    names = [
+        c.get("name") if isinstance(c, dict) else c
+        for c in activity_categories
+    ]
 
-        if str(category).lower() in [str(name).lower() for name in names]:
-            score += 40
+    if any(str(category).lower() in [str(name).lower() for name in names]
+        for category in categories
+    ):
+        score += 40
 
     # 2e on calcule les point par rapport au distance, 30 points max. 
     radius = preferences["radiusMeters"]
