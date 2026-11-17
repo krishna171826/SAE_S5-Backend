@@ -54,7 +54,8 @@ export const CATEGORY_VALUES = {
       'escape_game',
       'horse_riding',
       'miniature_golf',
-      'water_park'
+      'water_park',
+      'trampoline_park'
     ],
     tourism: [
       'aquarium',
@@ -72,7 +73,9 @@ export const CATEGORY_VALUES = {
       'pitch',
       'sports_centre',
       'sports_hall',
-      'swimming_pool'
+      'swimming_pool',
+      'disc_golf_course',
+      'swimming_area'
     ],
     sport: [
       'climbing',
@@ -84,7 +87,8 @@ export const CATEGORY_VALUES = {
       'soccer',
       'badminton',
       'table_tennis',
-      'swimming'
+      'swimming',
+      'padel'
     ]
   },
 
@@ -101,10 +105,6 @@ export const CATEGORY_VALUES = {
     ]
   }
 };
-
-// --------------------------------------------------
-// HELPERS
-// --------------------------------------------------
 
 function tagValues(value) {
   if (typeof value !== 'string') return [];
@@ -131,9 +131,7 @@ function matchesTag(osmTags, key, allowedValues) {
   );
 }
 
-// --------------------------------------------------
-// CATÉGORISATION PRINCIPALE
-// --------------------------------------------------
+// Catégorie PRINCIPALE
 
 export function mapActivityCategories(osmTags) {
   if (
