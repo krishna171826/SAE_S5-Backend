@@ -104,13 +104,8 @@ export async function findNearbyActivities(client, pointLongitude, pointLatitude
   `;
 
   const values = [pointLongitude, pointLatitude, rayon];
-  let paramIndex = 4;
 
-  if (filters.indoor_outdoor) {
-    query += ` AND a.indoor_outdoor = $${paramIndex}`;
-    values.push(filters.indoor_outdoor);
-    paramIndex++;
-  }
+
 
   if (filters.free_only === true) {
     query += ` AND a.fee = false`;
