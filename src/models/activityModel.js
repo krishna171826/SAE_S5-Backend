@@ -104,7 +104,6 @@ export async function findNearbyActivities(client, pointLongitude, pointLatitude
   `;
 
   const values = [pointLongitude, pointLatitude, rayon];
-  let paramIndex = 4;
 
 
 
