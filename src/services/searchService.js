@@ -10,8 +10,12 @@ export async function processSearch({ address, radius, visitorId, preferences })
   const { latitude, longitude } = await geocodeAddress(address);
   const radiusMeters = Number(radius);
 
-  const rawElements = await fetchActivities(latitude, longitude, radiusMeters);
-
+const rawElements = await fetchActivities(
+  latitude,
+  longitude,
+  radiusMeters,
+  preferences.categories
+  );
   if (rawElements && rawElements.length > 0) {
     await saveActivitiesBatch(rawElements);
   }

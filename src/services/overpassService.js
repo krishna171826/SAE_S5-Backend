@@ -1,41 +1,66 @@
 
-export async function fetchActivities(latitude, longitude, radius) {
+import { CATEGORY_VALUES } from "./categoryMappingService.js";
 
-  // Construire la requête avec les tags OSM
+export async function fetchActivities(latitude, longitude, radius, categories = []) {
+
+  // 1. Déterminer les catégories à rechercher
+  // Si aucune catégorie n'est choisie, rechercher toutes les catégories
+  const selectedCategories =
+    Array.isArray(categories) && categories.length > 0
+      ? categories.filter(category =>
+          Object.hasOwn(CATEGORY_VALUES, category)
+        )
+      : Object.keys(CATEGORY_VALUES);
+
+  const categoriesToSearch = selectedCategories.length > 0
+    ? selectedCategories
+    : Object.keys(CATEGORY_VALUES);
+
+  // 2. Regrouper les tags OSM par type
+  const tagsByKey = new Map();
+
+  for (const category of categoriesToSearch) {
+    const rules = CATEGORY_VALUES[category];
+
+    for (const [key, values] of Object.entries(rules)) {
+      if (!tagsByKey.has(key)) {
+        tagsByKey.set(key, new Set());
+      }
+
+      for (const value of values) {
+        tagsByKey.get(key).add(value);
+      }
+    }
+  }
+
+  // 3. Construire uniquement les requêtes nécessaires
+  const clauses = [];
+
+  for (const [key, values] of tagsByKey) {
+    const regex = [...values].join("|");
+
+    clauses.push(
+      `nwr["${key}"~"^(${regex})$"](around:${radius},${latitude},${longitude});`
+    );
+  }
+
   const query = `
     [out:json][timeout:25];
     (
-        nwr["leisure"~"^(amusement_arcade|bowling_alley|escape_game|miniature_golf|water_park|horse_riding|playground|park|garden|nature_reserve|golf_course|ice_rink|pitch|sports_centre|sports_hall|swimming_pool)$"](around:${radius},${latitude},${longitude});
-
-        nwr["amenity"~"^(cinema|theatre|arts_centre|music_venue|planetarium|nightclub|restaurant|cafe|bar|pub|biergarten|fast_food|food_court|ice_cream)$"](around:${radius},${latitude},${longitude});
-
-        nwr["tourism"~"^(museum|gallery|attraction|theme_park|zoo|aquarium|viewpoint|nature_reserve)$"](around:${radius},${latitude},${longitude});
-
-        nwr["sport"~"^(climbing|karting|laser_tag|paintball|tennis|basketball|soccer|badminton|table_tennis|swimming)$"](around:${radius},${latitude},${longitude});
-
-        nwr["natural"~"^(beach|wood|waterfall|cave_entrance)$"](around:${radius},${latitude},${longitude});
-
-        nwr["leisure"~"^(beach_resort|dance)$"](around:${radius},${latitude},${longitude});
-
-        nwr["amenity"="casino"](around:${radius},${latitude},${longitude});
-
-        nwr["landuse"~"^(forest|recreation_ground)$"](around:${radius},${latitude},${longitude});
-
-        nwr["leisure"~"^(trampoline_park|disc_golf_course|swimming_area)$"](around:${radius},${latitude},${longitude});
-
-        nwr["sport"="padel"](around:${radius},${latitude},${longitude});
-
-
+      ${clauses.join("\n")}
     );
     out center;
   `;
 
-  try {
-const servers = [
+  console.log("Catégories recherchées :", categoriesToSearch);
+
+  // 4. Serveurs Overpass disponibles
+  const servers = [
     "https://overpass-api.de/api/interpreter",
     "https://overpass.private.coffee/api/interpreter"
   ];
 
+  // 5. Interroger les serveurs dans l'ordre
   for (const server of servers) {
     try {
       console.log(`Tentative Overpass : ${server}`);
@@ -47,7 +72,7 @@ const servers = [
           "User-Agent": "SAE-S5-Activities/1.0"
         },
         body: "data=" + encodeURIComponent(query),
-        signal: AbortSignal.timeout(35000)
+        signal: AbortSignal.timeout(10000)
       });
 
       if (!response.ok) {
@@ -65,15 +90,14 @@ const servers = [
       return data.elements;
 
     } catch (error) {
-      console.error(`Échec Overpass (${server}) :`, error.message);
+      console.error(
+        `Échec Overpass (${server}) :`,
+        error.message
+      );
     }
   }
 
+  // 6. Aucun serveur disponible
   console.error("Tous les serveurs Overpass ont échoué.");
   return [];
-    
-  } catch (error) {
-    console.error("Erreur Overpass :", error);
-    return [];
-  }
 }

@@ -6,7 +6,8 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "dotenv -- node src/server.js",
-    "migrate": "dotenv -- node-pg-migrate"
+    "migrate": "dotenv -- node-pg-migrate",
+    "seed": "dotenv -- node scripts/seedActivities.js"
   },
   "keywords": [],
   "author": "",
